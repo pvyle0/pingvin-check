@@ -14,17 +14,17 @@ Pingvin-Check verifies whether the internet is reachable using two methods: **IC
 
 ## Installation
 
-\`\`\`bash
+```bash
 git clone https://github.com/pvyle0/pingvin-check.git
 cd pingvin-check
 pip install -e .
-\`\`\`
+```
 
 ## Usage
 
-\`\`\`bash
+```bash
 python main.py
-\`\`\`
+```
 
 ## License
 
