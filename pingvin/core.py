@@ -1,9 +1,11 @@
+
 from dataclasses import dataclass
 from typing import Optional
 import socket
 import time
 import subprocess
 import platform
+
 
 @dataclass
 class NetworkStatus:
@@ -16,9 +18,15 @@ class NetworkStatus:
 
 class NetworkChecker:
     DEFAULT_TARGETS = [
-        ("8.8.8.8", 53),
-        ("1.1.1.1", 53),
+        ("1.1.1.1", 53),   
+        ("8.8.8.8", 53),  
+        ("77.88.8.8", 53), 
+        ("1.1.1.1", 443),
+        ("9.9.9.9", 53),
+        ("208.67.222.222", 53),
     ]
+    def __init__(self, timeout: float = 2.0):
+        self.timeout = timeout
     def __init__(self, timeout: float = 2.0):
         self.timeout = timeout
 
