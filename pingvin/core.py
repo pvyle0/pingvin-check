@@ -19,10 +19,10 @@ class NetworkChecker:
         ("8.8.8.8", 53),
         ("1.1.1.1", 53),
     ]
-    def __init__(self, timeout=2.0):
+    def __init__(self, timeout: float = 2.0):
         self.timeout = timeout
 
-    def check_tcp(self, host, port):
+    def check_tcp(self, host: str, port: int) -> NetworkStatus:
         start = time.time()
         try:
             with socket.create_connection((host, port), timeout=self.timeout) as sock:
@@ -31,7 +31,7 @@ class NetworkChecker:
         except Exception as err:
             return NetworkStatus(available=False, method="tcp", host=f"{host}:{port}", error=str(err))
         
-    def check_ping(self, host="8.8.8.8"):
+    def check_ping(self, host: str = "8.8.8.8") -> NetworkStatus:
         start = time.time()
 
         try:
@@ -53,7 +53,7 @@ class NetworkChecker:
         except Exception as err:
             return NetworkStatus(available=False, method="ping", host=host, error=str(err))
         
-    def check(self):
+    def check(self) -> NetworkStatus:
         result = self.check_ping()
         if result.available:
             return result
