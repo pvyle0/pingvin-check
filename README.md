@@ -13,7 +13,11 @@ Pingvin-Check verifies whether the internet is reachable using two methods: **IC
 - **Logging** — internal debug logs showing which checks succeeded/failed
 - **Tests** — unit tests covering success and failure scenarios (with mocking)
 
-## Project structure## Installation
+## Project structure
+
+pingvin-check/ ├── pingvin/ │   ├── core.py       (NetworkChecker logic: ping + TCP fallback) │   └── cli.py         (Command-line interface) ├── tests/ │   └── test_core.py   (Unit tests) ├── main.py             (Entry point) └── pyproject.toml      (Package metadata)
+
+## Installation
 
 ```bash
 git clone https://github.com/pvyle0/pingvin-check.git
