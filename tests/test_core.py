@@ -1,14 +1,19 @@
 from pingvin.core import NetworkChecker, NetworkStatus
+from unittest.mock import patch, MagicMock
 
 def test_check_tcp_success():
     checker = NetworkChecker()
-    result = checker.check_tcp("8.8.8.8", 53)
-    assert result.available is True
-    assert result.method == "tcp"
+    with patch("socket.create_connection") as fake_connect:
+        fake_connect.return_value.__enter__.return_value = MagicMock()
+        result = checker.check_tcp("8.8.8.8", 53)
+
+        assert result.available is True
+        assert result.method == "tcp"
+# \\ сделал мок версию можно потом остальное тоже так сделать
 
 def test_check_tcp_failure():
     checker = NetworkChecker(timeout=1.0)
-    result = checker.check_tcp("192.0.2.1", 53)
+    result = checker.check_tcp("127.0.0.11", 53) # 100.64.0.1
     assert result.available is False
     assert result.error is not None
 

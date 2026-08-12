@@ -5,6 +5,8 @@ import socket
 import time
 import subprocess
 import platform
+import logging
+logger = logging.getLogger(__name__)
 
 
 @dataclass
@@ -25,23 +27,27 @@ class NetworkChecker:
         ("9.9.9.9", 53),
         ("208.67.222.222", 53),
     ]
-    def __init__(self, timeout: float = 2.0):
-        self.timeout = timeout
+
+
     def __init__(self, timeout: float = 2.0):
         self.timeout = timeout
 
+
     def check_tcp(self, host: str, port: int) -> NetworkStatus:
+        target_str = f"{host}:{port}"
         start = time.time()
         try:
             with socket.create_connection((host, port), timeout=self.timeout) as sock:
                 elapsed = (time.time() - start) * 1000
-            return NetworkStatus(available=True, method="tcp", latency_ms=elapsed, host=f"{host}:{port}")
+            logger.debug(f"TCP check succeeded: {target_str} ({elapsed:.1f}ms)")
+            return NetworkStatus(available=True, method="tcp", latency_ms=elapsed, host=target_str)
         except Exception as err:
-            return NetworkStatus(available=False, method="tcp", host=f"{host}:{port}", error=str(err))
+            logger.debug(f"TCP check failed: {target_str} - {err}")
+            return NetworkStatus(available=False, method="tcp", host=target_str, error=str(err))
+
         
     def check_ping(self, host: str = "8.8.8.8") -> NetworkStatus:
         start = time.time()
-
         try:
             if platform.system().lower() == "windows":
                 cmd = ["ping", "-n", "1", "-w", "2000", host]
@@ -52,14 +58,18 @@ class NetworkChecker:
                 stdout=subprocess.DEVNULL,
                 stderr=subprocess.DEVNULL,
                 timeout=self.timeout + 1
-        )
+            )
             if result.returncode == 0:
                 elapsed = (time.time() - start) * 1000
+                logger.debug(f"Ping check succeeded: {host} ({elapsed:.1f}ms)")
                 return NetworkStatus(available=True, method="ping", latency_ms=elapsed, host=host)
             else:
+                logger.debug(f"Ping check failed: {host} (return code {result.returncode})")
                 return NetworkStatus(available=False, method="ping", host=host, error=f"Return code: {result.returncode}")
         except Exception as err:
+            logger.debug(f"Ping check failed: {host} - {err}")
             return NetworkStatus(available=False, method="ping", host=host, error=str(err))
+
         
     def check(self) -> NetworkStatus:
         result = self.check_ping()
