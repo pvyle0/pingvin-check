@@ -1,0 +1,15 @@
+[project]
+name = "pingvin-check"
+version = "0.1.0"
+description = "A lightweight network connectivity checker (ICMP ping + TCP fallback)"
+authors = [
+    {name = "pvyle0"}
+]
+requires-python = ">=3.9"
+
+[project.scripts]
+pingvin-check = "pingvin.cli:main"
+
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
