@@ -8,14 +8,11 @@ Pingvin-Check verifies whether the internet is reachable using two methods: **IC
 
 - **ICMP ping** — standard host reachability check
 - **TCP connection check** — fallback across multiple public DNS servers
+- **Port scanning** — scan a range of TCP ports on a target host
 - **Latency measurement** — response time tracking in milliseconds
 - **JSON output** — machine-readable output for use in scripts/pipelines
 - **Logging** — internal debug logs showing which checks succeeded/failed
 - **Tests** — unit tests covering success and failure scenarios (with mocking)
-
-## Project structure
-
-pingvin-check/ ├── pingvin/ │   ├── core.py       (NetworkChecker logic: ping + TCP fallback) │   └── cli.py         (Command-line interface) ├── tests/ │   └── test_core.py   (Unit tests) ├── main.py             (Entry point) └── pyproject.toml      (Package metadata)
 
 ## Installation
 
@@ -26,6 +23,8 @@ pip install -e .
 ```
 
 ## Usage
+
+Check default connectivity (Google DNS):
 
 ```bash
 python main.py
@@ -43,13 +42,24 @@ Get machine-readable JSON output:
 python main.py --format json
 ```
 
+Scan a port range on a host:
+
+```bash
+python main.py --host scanme.nmap.org --scan --start-port 20 --end-port 25
+```
+
+> ⚠️ Only scan hosts you own or are explicitly authorized to test (e.g. `scanme.nmap.org`, which is publicly allowed for testing). Scanning systems without permission may be illegal.
+
 ### Options
 
-| Flag       | Description             | Default    |
-|------------|--------------------------|------------|
-| `--host`   | Target host to check     | `8.8.8.8`  |
-| `--port`   | TCP port to connect to   | `53`       |
-| `--format` | Output format (`text`/`json`) | `text` |
+| Flag           | Description                          | Default    |
+|----------------|----------------------------------------|------------|
+| `--host`       | Target host to check/scan             | `8.8.8.8`  |
+| `--port`       | TCP port to connect to (single check) | `53`       |
+| `--format`     | Output format (`text`/`json`)         | `text`     |
+| `--scan`       | Run a port scan instead of a single check | off    |
+| `--start-port` | Start of port range for scanning      | `1`        |
+| `--end-port`   | End of port range for scanning        | `1024`     |
 
 ## Running tests
 
