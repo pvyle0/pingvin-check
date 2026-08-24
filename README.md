@@ -2,6 +2,8 @@
 
 > A lightweight network connectivity checker.
 
+**v0.5.0**
+
 Pingvin-Check verifies whether the internet is reachable using two methods: **ICMP ping** and **TCP connection** to multiple public DNS servers (Cloudflare, Google, Yandex, Quad9, OpenDNS). If ICMP is blocked by a firewall, the TCP fallback still gives you a reliable answer.
 
 ## Features
@@ -31,6 +33,8 @@ Launch the interactive TUI:
 ```bash
 python3 -m pingvin.tui
 ```
+
+Enter a target host to run ICMP ping + common port checks (SSH, HTTP, HTTPS), or enter a port range (e.g. `1-1024`) to run a full port scan — results show up in separate tables with live status.
 
 Check default connectivity (Google DNS):
 
