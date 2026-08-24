@@ -1,50 +1,88 @@
 import asyncio
 from textual.app import App, ComposeResult
 from textual.containers import Vertical
-from textual.widgets import Header, Footer, Button, Static
+from textual.widgets import Header, Footer, Button, Static, Input, DataTable
 from textual.binding import Binding
-
 from pingvin.core import NetworkChecker
-class StatusDisplay(Static):
-    pass
-    
+
+
 class PingvinApp(App):
     CSS = """
-    #status-box {
-        height: auto;
-        padding: 2;
-        border: solid $accent;
+    #target-input {
         margin: 1;
+    }
+    DataTable {
+        height: 1fr;
+        margin: 1;
+    }
+    #result-status {
+        height: auto;
+        padding: 1;
+        margin: 1;
+        border: solid $accent;
     }
     """
     BINDINGS = [
-        Binding("ctrl+r", "run_check", "Check now", show=True)
+        Binding("ctrl+r", "run_checks", "Run Checks", show=True),
+        Binding("ctrl+q", "quit", "Quit", show=True),
     ]
     TITLE = "Pingvin-Check"
-    SUB_TITLE = "Network connectivity monitor"
+    SUB_TITLE = "Network Connectivity Monitor"
+    PORTS_TO_CHECK = [(22, "SSH"), (80, "HTTP"), (443, "HTTPS")]
+
     def compose(self) -> ComposeResult:
         yield Header()
-        with Vertical(id="status-box"):
-            yield StatusDisplay("Press 'Check now' or CTRL+R to run a check", id="status-display")
-            yield Button("check now", id="check-btn", variant="success")
+        yield Input(placeholder="Enter target host (e.g. example.com)", id="target-input")
+        yield DataTable(id="results-table")
+        yield Static("Status: —", id="result-status")
         yield Footer()
 
+
+    def on_mount(self):
+        table = self.query_one("#results-table", DataTable)
+        table.add_columns("Check", "Status", "Latency")
     def on_button_pressed(self, event):
-        if event.button.id == "check-btn":
-            self.run_worker(self.action_run_check())
+        pass
 
+    def on_input_submitted(self, event):
+        if event.input.id == "target-input":
+            self.run_worker(self.action_run_checks())
 
-    async def action_run_check(self):
-        display = self.query_one("#status-display", StatusDisplay)
-        display.update("[yellow]Checking...[/yellow]")
-
+    async def action_run_checks(self):
+        target_input = self.query_one("#target-input", Input)
+        target = target_input.value.strip()
+        if not target:
+            return
+        table = self.query_one("#results-table", DataTable)
+        table.clear()
         checker = NetworkChecker()
-        result = await asyncio.to_thread(checker.check)
-        if result.available:
-            display.update(f"[green]ONLINE[/green] via {result.method} ({result.latency_ms:.1f}ms)")
-        else:
-            display.update(f"[red]OFFLINE[/red] - {result.error}")
+        results = []
 
+        # \\ ICMP ping
+        ping_result = await asyncio.to_thread(checker.check_ping, target)
+        status_icon = "[green]✓[/green]" if ping_result.available else "[red]✗[/red]"
+        latency = f"{ping_result.latency_ms:.1f} ms" if ping_result.available else "timeout"
+        table.add_row("ICMP Ping", status_icon, latency)
+        results.append(ping_result.available)
+
+
+        # \\ TCP
+        for port, name in self.PORTS_TO_CHECK:
+            port_result = await asyncio.to_thread(checker.check_tcp, target, port)
+            status_icon = "[green]✓[/green]" if port_result.available else "[red]✗[/red]"
+            latency = f"{port_result.latency_ms:.1f} ms" if port_result.available else "timeout"
+            table.add_row(f"Port {port} ({name})", status_icon, latency)
+            results.append(port_result.available)
+
+
+        status_widget = self.query_one("#result-status", Static)
+
+        if all(results):
+            status_widget.update("Status: [green]FULLY AVAILABLE[/green]")
+        elif not any(results):
+            status_widget.update("Status: [red]UNAVAILABLE[/red]")
+        else:
+            status_widget.update("Status: [yellow]PARTIALLY AVAILABLE[/yellow]")
 if __name__ == "__main__":
     app = PingvinApp()
     app.run()
