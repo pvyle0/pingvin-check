@@ -4,7 +4,7 @@ from textual.containers import Vertical
 from textual.widgets import Header, Footer, Button, Static, Input, DataTable
 from textual.binding import Binding
 from pingvin.core import NetworkChecker
-
+from pingvin.scanner import PortScanner
 
 class PingvinApp(App):
     CSS = """
@@ -25,6 +25,7 @@ class PingvinApp(App):
     BINDINGS = [
         Binding("ctrl+r", "run_checks", "Run Checks", show=True),
         Binding("ctrl+q", "quit", "Quit", show=True),
+        Binding("ctrl+s", "run_portscan", "Port Scan", show=True),
     ]
     TITLE = "Pingvin-Check"
     SUB_TITLE = "Network Connectivity Monitor"
@@ -34,6 +35,8 @@ class PingvinApp(App):
         yield Header()
         yield Input(placeholder="Enter target host (e.g. example.com)", id="target-input")
         yield DataTable(id="results-table")
+        yield Input(placeholder="Port range, e.g. 1-1024", id="portscan-input")
+        yield DataTable(id="portscan-table")
         yield Static("Status: —", id="result-status")
         yield Footer()
 
@@ -41,12 +44,18 @@ class PingvinApp(App):
     def on_mount(self):
         table = self.query_one("#results-table", DataTable)
         table.add_columns("Check", "Status", "Latency")
+        
+        scan_table = self.query_one("#portscan-table", DataTable)
+        scan_table.add_columns("Port", "Status", "Latency")
+        
     def on_button_pressed(self, event):
         pass
 
     def on_input_submitted(self, event):
         if event.input.id == "target-input":
             self.run_worker(self.action_run_checks())
+        elif event.input.id == "portscan-input":
+            self.run_worker(self.action_run_portscan())
 
     async def action_run_checks(self):
         target_input = self.query_one("#target-input", Input)
@@ -74,9 +83,29 @@ class PingvinApp(App):
             table.add_row(f"Port {port} ({name})", status_icon, latency)
             results.append(port_result.available)
 
+    async def action_run_portscan(self):
+        range_input = self.query_one("#portscan-input", Input)
+        range_text = range_input.value.strip()
+        if not range_text or "-" not in range_text:
+            return
+        start_str, end_str = range_text.split("-")
+        start_port = int(start_str)
+        end_port = int(end_str)
+
+        target_input = self.query_one("#target-input", Input)
+        target = target_input.value.strip()
+        if not target:
+            return
+
+
+        scan_table = self.query_one("#portscan-table", DataTable)
+        scan_table.clear()
+        scanner = PortScanner()
+        results = await asyncio.to_thread(scanner.scan, target, start_port, end_port)
+        for result in results:
+            scan_table.add_row(result.host, "[green]✓[/green]", f"{result.latency_ms:.1f} ms")
 
         status_widget = self.query_one("#result-status", Static)
-
         if all(results):
             status_widget.update("Status: [green]FULLY AVAILABLE[/green]")
         elif not any(results):
