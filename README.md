@@ -17,6 +17,14 @@ Pingvin-Check verifies whether the internet is reachable using two methods: **IC
 - **Logging** — internal debug logs showing which checks succeeded/failed
 - **Tests** — unit tests covering success and failure scenarios (with mocking)
 
+## Screenshots
+
+**Host reachable — full network check + port scan**
+![Successful check](docs/screenshots/screenshot_20260825_012110.jpg)
+
+**Host unreachable — TEST-NET address**
+![Unreachable check](docs/screenshots/screenshot_20260825_012551.jpg)
+
 ## Installation
 
 ```bash
