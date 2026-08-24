@@ -109,12 +109,10 @@ class PingvinApp(App):
             scan_table.add_row(result.host, "[green]✓[/green]", f"{result.latency_ms:.1f} ms")
 
         status_widget = self.query_one("#result-status", Static)
-        if all(results):
-            status_widget.update("Status: [green]FULLY AVAILABLE[/green]")
-        elif not any(results):
-            status_widget.update("Status: [red]UNAVAILABLE[/red]")
+        if results:
+            status_widget.update(f"Status: [green]Found {len(results)} open port(s)[/green]")
         else:
-            status_widget.update("Status: [yellow]PARTIALLY AVAILABLE[/yellow]")
+            status_widget.update("Status: [yellow]No open ports found in range[/yellow]")
 if __name__ == "__main__":
     app = PingvinApp()
     app.run()
