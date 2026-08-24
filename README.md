@@ -21,7 +21,7 @@ Pingvin-Check verifies whether the internet is reachable using two methods: **IC
 git clone https://github.com/pvyle0/pingvin-check.git
 cd pingvin-check
 pip install -e .
-pip install textual  # required for the interactive TUI
+pip install textual
 ```
 
 ## Usage
