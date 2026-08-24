@@ -86,7 +86,10 @@ class PingvinApp(App):
     async def action_run_portscan(self):
         range_input = self.query_one("#portscan-input", Input)
         range_text = range_input.value.strip()
+        status_widget = self.query_one("#result-status", Static)
+
         if not range_text or "-" not in range_text:
+            status_widget.update("Status: [red]Invalid port range (use format: 20-25)[/red]")
             return
         start_str, end_str = range_text.split("-")
         start_port = int(start_str)
