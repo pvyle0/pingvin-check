@@ -91,9 +91,12 @@ class PingvinApp(App):
         if not range_text or "-" not in range_text:
             status_widget.update("Status: [red]Invalid port range (use format: 20-25)[/red]")
             return
-        start_str, end_str = range_text.split("-")
-        start_port = int(start_str)
-        end_port = int(end_str)
+        parts = range_text.split("-")
+        if len(parts) != 2 or not all(p.strip().isdigit() for p in parts):
+            status_widget.update("Status: [red]Invalid port range (use format: 20-25)[/red]")
+            return
+        start_port = int(parts[0])
+        end_port = int(parts[1])
 
         target_input = self.query_one("#target-input", Input)
         target = target_input.value.strip()

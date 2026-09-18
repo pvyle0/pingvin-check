@@ -28,10 +28,8 @@ class NetworkChecker:
         ("208.67.222.222", 53),
     ]
 
-
     def __init__(self, timeout: float = 2.0):
         self.timeout = timeout
-
 
     def check_tcp(self, host: str, port: int) -> NetworkStatus:
         target_str = f"{host}:{port}"
